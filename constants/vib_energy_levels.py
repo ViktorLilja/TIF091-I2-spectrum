@@ -73,7 +73,7 @@ class VibLevel:
     def energy(self, nu):
         E1 = self.we * (0.5 + nu)           # First order term
         E2 = self.wexe * (0.5 + nu)**2      # Second order term
-        return self.Te - E1 + E2
+        return self.Te + E1 - E2
 
 
 #--------------------------------------------------------------#
