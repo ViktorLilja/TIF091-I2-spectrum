@@ -32,31 +32,40 @@ E_B, psi_B = LA.eigh(B_H)
 #     Calculate position and intensity of peaks     #
 #---------------------------------------------------#
 
-vprime = 5   # Select which level is excited by laser
-
-# Wavelength of laser: 612nm = 16339.87 cminv
-# Roughly equivalent to energy difference between v´´= 0 and v´= 5
-
+# Select range of transisitons to simulate
+vprime_range = range(0, 50)
+vbis_range   = [0, 1, 2, 3]   # ground state + 3 hot bands
 
 wavelengths = []
 intensities = []
-for vbis in range(0, 20):
-    # Calculate wavelength of light from energy difference between levels
-    deltaE = I2["B"].energy(vprime) - I2["X"].energy(vbis)
-    deltaE /= au.cminv                  # Convert from hartee to cminv
-    wavelengths.append(1e7 / deltaE)    # Convert from cminv to nm
+for vbis in vbis_range:
+    for vprime in vprime_range:
+        # Calculate wavelength of light from energy difference between levels
+        E_excited = E_B[vprime]
+        E_ground  = E_X[vbis]
+        E_0       = E_X[0]
+        deltaE = E_excited - E_ground
+        deltaE /= au.cminv                  # Convert from hartee to cminv
+        wavelengths.append(1e7 / deltaE)    # Convert from cminv to nm
 
-    # Calculate intensity using Franck-Condon factor
-    FCfactor = np.sum(np.multiply(psi_X[:,vbis], psi_B[:,vprime])*dr)
-    intensities.append(FCfactor * FCfactor)
+        # Calculate Franck-Condon factor
+        intensity = np.sum(np.multiply(psi_X[:,vbis], psi_B[:,vprime])*dr)
+        
+        # Scale by probablility of hot band being excited
+        # Assuming bolzmann distribution at temperature 100C
+        T = (100 + 273.15) * au.K
+        beta = 1 / (au.k * T)
+        intensity *= math.exp(- beta * (E_ground-E_0))
+
+        intensities.append(intensity * intensity)
 
 
 #---------------------------------------#
 #     Generate spectrum from peaks      #
 #---------------------------------------#
 
-n_points = 1000          # Number of datapoints in interval
-wl_inter = (600, 800)    # [nm] wavelength scan interval
+n_points = 10000          # Number of datapoints in interval
+wl_inter = (500, 650)    # [nm] wavelength scan interval
 
 # Gaussian function as shape of peak
 def gaussian(x, mean, std, height):
@@ -66,18 +75,18 @@ def gaussian(x, mean, std, height):
 
 # Coordinate system
 lam = np.linspace(wl_inter[0], wl_inter[1], n_points)   # [nm] wavelength
-spec = np.zeros_like(lam)                               # intensity (FC factor)
+spec = np.zeros_like(lam)                               # absorbance
 
 # Iterate over peaks and add them to the spectrum
 for i in range(0, len(wavelengths)):
     peak_mid = wavelengths[i]
     peak_height = intensities[i]
-    peak_width = 1
+    peak_width = 0.3
 
     peak = gaussian(wavelengths[i], peak_mid, peak_width, peak_height)
     spec += peak
 
-# Normalize intensity to highest peak
+# Normalize absorbance to highest peak
 spec /= np.max(spec)
 
 plt.plot(lam, spec)
@@ -87,9 +96,9 @@ plt.show()
 #     Save to CSV      #
 #----------------------#
 
-with open("output/simulated_f_spec.csv", "w") as f:
+with open("output/simulated_a_spec.csv", "w") as f:
     # Header
-    f.write("wavelength [nm], relative intensity\n")
+    f.write("wavelength [nm], relative absorbance\n")
 
     # Data
     for i in range(0, n_points):
