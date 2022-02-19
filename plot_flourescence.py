@@ -32,31 +32,41 @@ E_B, psi_B = LA.eigh(B_H)
 #     Calculate position and intensity of peaks     #
 #---------------------------------------------------#
 
-vprime = 5   # Select which level is excited by laser
-
-# Wavelength of laser: 612nm = 16339.87 cminv
-# Roughly equivalent to energy difference between v´´= 0 and v´= 5
-
-
 wavelengths = []
 intensities = []
-for vbis in range(0, 20):
-    # Calculate wavelength of light from energy difference between levels
-    deltaE = I2["B"].energy(vprime) - I2["X"].energy(vbis)
-    deltaE /= au.cminv                  # Convert from hartee to cminv
-    wavelengths.append(1e7 / deltaE)    # Convert from cminv to nm
 
-    # Calculate intensity using Franck-Condon factor
-    FCfactor = np.sum(np.multiply(psi_X[:,vbis], psi_B[:,vprime])*dr)
-    intensities.append(FCfactor * FCfactor)
+vprimes = [9, 7]
+weights = [1, 0.2]
 
+# Iterate over excited states
+for i in range(0, len(vprimes)):
+    vprime = vprimes[i]
+    weight = weights[i]
+
+    # Iterate over ground states
+    for vbis in range(0, 25):
+        # Calculate wavelength of light from energy difference between levels
+        deltaE = E_B[vprime] - E_X[vbis]
+        deltaE /= au.cminv                  # Convert from hartee to cminv
+        wavelength = 1e7 / deltaE           # Convert from cminv to nm
+        wavelengths.append(wavelength)    
+
+        # Calculate intensity using Franck-Condon factor
+        FCfactor = np.sum(np.multiply(psi_X[:,vbis], psi_B[:,vprime])*dr)
+        frequency = 3 / (wavelength * 10)   # Frequency from wavelegth in nm
+        intensities.append(weight * FCfactor * FCfactor * frequency**3)
+
+    print(wavelengths)
 
 #---------------------------------------#
 #     Generate spectrum from peaks      #
 #---------------------------------------#
 
+# Coordinate system
 n_points = 1000          # Number of datapoints in interval
-wl_inter = (600, 800)    # [nm] wavelength scan interval
+wl_inter = (580, 800)    # [nm] wavelength scan interval
+lam = np.linspace(wl_inter[0], wl_inter[1], n_points)   # [nm] wavelength
+spec = np.zeros_like(lam)                               # intensity (FC factor)
 
 # Gaussian function as shape of peak
 def gaussian(x, mean, std, height):
@@ -64,15 +74,11 @@ def gaussian(x, mean, std, height):
     norm_dist = normalization * np.exp(-0.5*((lam-mean)/std)**2)
     return height * norm_dist
 
-# Coordinate system
-lam = np.linspace(wl_inter[0], wl_inter[1], n_points)   # [nm] wavelength
-spec = np.zeros_like(lam)                               # intensity (FC factor)
-
 # Iterate over peaks and add them to the spectrum
 for i in range(0, len(wavelengths)):
     peak_mid = wavelengths[i]
     peak_height = intensities[i]
-    peak_width = 1
+    peak_width = 0.5
 
     peak = gaussian(wavelengths[i], peak_mid, peak_width, peak_height)
     spec += peak

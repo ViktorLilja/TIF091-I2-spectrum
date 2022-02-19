@@ -1,7 +1,10 @@
+import numpy as np
+import math
+import matplotlib.pyplot as plt
+from numpy import linalg as LA
+
 import constants.hartee_units as au
 from constants.vib_energy_levels import I2
-from numpy import linalg as LA
-import numpy as np
 
 #---------------------------------------------#
 #     CALCULATION OF ENERGY WAVEFUNCTIONS     #
@@ -25,16 +28,14 @@ E_X, psi_X = LA.eigh(X_H)
 E_B, psi_B = LA.eigh(B_H)
 
 
-# Save energy levels to textfile
-with open('output/calculated_energy_levels.csv', 'w') as f:
+#---------------------------------------------#
+#     COMPARE CALCULATED ENERGY TO THEORY     #
+#---------------------------------------------#
 
-    # Header
-    f.write("Electronic state, nu, energy [cm^-1]\n")
+N = 50
+v = np.array(range(0,N))
 
-    for vbis in range(0,50):
-        energy = E_X[vbis] / au.cminv
-        f.write("X, " + str(vbis) + ", " + str(energy) + "\n")
-
-    for vprime in range(0,50):
-        energy = E_B[vprime] /au.cminv
-        f.write("B, " + str(vprime) + ", " + str(energy) + "\n")
+# Plotting
+plt.plot(v, E_X[0:N] / au.cminv, "rx")
+plt.plot(v, I2["X"].energy(v) / au.cminv, "k--")
+plt.show()

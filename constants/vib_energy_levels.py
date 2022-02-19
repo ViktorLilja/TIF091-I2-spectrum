@@ -86,14 +86,14 @@ I2 = {
     "X": VibLevel(  126.90447 * au.u, 
                     126.90447 * au.u, 
                     214.50    * au.cminv, 
-                    0.614     * au.cminv, 
+                    0.614     * au.cminv,
                     0         * au.cminv, 
                     2.666     * au.Ang),
 
     "B": VibLevel(  126.90447 * au.u, 
                     126.90447 * au.u, 
                     125.69    * au.cminv, 
-                    0.764     * au.cminv, 
+                    0.764     * au.cminv,
                     15769.01  * au.cminv, 
                     3.024     * au.Ang)
 }

@@ -33,8 +33,8 @@ E_B, psi_B = LA.eigh(B_H)
 #---------------------------------------------------#
 
 # Select range of transisitons to simulate
-vprime_range = range(0, 50)
-vbis_range   = [0, 1, 2, 3]   # ground state + 3 hot bands
+vprime_range = range(0,500)
+vbis_range   = range(0,50)
 
 wavelengths = []
 intensities = []
@@ -46,18 +46,20 @@ for vbis in vbis_range:
         E_0       = E_X[0]
         deltaE = E_excited - E_ground
         deltaE /= au.cminv                  # Convert from hartee to cminv
-        wavelengths.append(1e7 / deltaE)    # Convert from cminv to nm
-
+        wavelength = 1e7 / deltaE           # Convert from cminv to nm
+        wavelengths.append(wavelength)    
+        
         # Calculate Franck-Condon factor
         intensity = np.sum(np.multiply(psi_X[:,vbis], psi_B[:,vprime])*dr)
         
         # Scale by probablility of hot band being excited
         # Assuming bolzmann distribution at temperature 100C
-        T = (100 + 273.15) * au.K
-        beta = 1 / (au.k * T)
-        intensity *= math.exp(- beta * (E_ground-E_0))
+        #T = (100 + 273.15) * au.K
+        #beta = 1 / (au.k * T)
+        #intensity *= math.exp(- beta * (E_ground-E_0))
 
-        intensities.append(intensity * intensity)
+        frequency = 3 / (wavelength * 10)
+        intensities.append(intensity * intensity * frequency**3)
 
 
 #---------------------------------------#
@@ -81,15 +83,17 @@ spec = np.zeros_like(lam)                               # absorbance
 for i in range(0, len(wavelengths)):
     peak_mid = wavelengths[i]
     peak_height = intensities[i]
-    peak_width = 0.3
+    peak_width = 0.8
 
     peak = gaussian(wavelengths[i], peak_mid, peak_width, peak_height)
     spec += peak
 
 # Normalize absorbance to highest peak
 spec /= np.max(spec)
+p = 2.0*spec
+T = np.exp(-p)
 
-plt.plot(lam, spec)
+plt.plot(lam, 1-T)
 plt.show()
 
 #----------------------#

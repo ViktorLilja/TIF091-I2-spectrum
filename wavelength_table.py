@@ -39,8 +39,8 @@ with open('output/wavelength_table.txt', 'w') as f:
         f.write("%d & " % vprime)
 
         for vbis in range(0,vbis_max+1):
-            energy_upper = I2["B"].energy(vprime) / au.cminv
-            energy_lower = I2["X"].energy(vbis)   / au.cminv
+            energy_upper = E_B[vprime] / au.cminv
+            energy_lower = E_X[vbis] / au.cminv
             energy_diff = energy_upper - energy_lower
 
             # lambda [nm] = 10^7 / wavenumber [cm^-1]
