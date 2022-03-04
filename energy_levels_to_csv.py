@@ -1,3 +1,5 @@
+# Example: Creare list of vibrational energy levels of molecular iodine
+
 import module.hartee_units as au
 from module.vib_energy_levels import I2
 from numpy import linalg as LA

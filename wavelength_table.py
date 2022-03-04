@@ -1,3 +1,6 @@
+# Example: Generate table of expected wavelengths of transitions
+# between energy levels in molecular iodine
+
 import module.hartee_units as au
 from module.vib_energy_levels import I2
 from numpy import linalg as LA

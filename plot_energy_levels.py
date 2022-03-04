@@ -1,5 +1,8 @@
+# Example: Compare eigenvalues of morse potential hamiltonian
+#          to energy levels from secon order anharmonic expansion
+#          of Morse potential.
+
 import numpy as np
-import math
 import matplotlib.pyplot as plt
 from numpy import linalg as LA
 
