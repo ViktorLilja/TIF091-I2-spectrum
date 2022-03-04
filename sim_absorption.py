@@ -3,8 +3,8 @@ import math
 import matplotlib.pyplot as plt
 from numpy import linalg as LA
 
-import constants.hartee_units as au
-from constants.vib_energy_levels import I2
+import module.hartee_units as au
+from module.vib_energy_levels import I2
 
 #---------------------------------------------#
 #     CALCULATION OF ENERGY WAVEFUNCTIONS     #
@@ -32,41 +32,42 @@ E_B, psi_B = LA.eigh(B_H)
 #     Calculate position and intensity of peaks     #
 #---------------------------------------------------#
 
+# Select range of transisitons to simulate
+vprime_range = range(0,500)
+vbis_range   = range(0,50)
+
 wavelengths = []
 intensities = []
-
-vprimes = [9, 7]
-weights = [1, 0.2]
-
-# Iterate over excited states
-for i in range(0, len(vprimes)):
-    vprime = vprimes[i]
-    weight = weights[i]
-
-    # Iterate over ground states
-    for vbis in range(0, 25):
+for vbis in vbis_range:
+    for vprime in vprime_range:
         # Calculate wavelength of light from energy difference between levels
-        deltaE = E_B[vprime] - E_X[vbis]
+        E_excited = E_B[vprime]
+        E_ground  = E_X[vbis]
+        E_0       = E_X[0]
+        deltaE = E_excited - E_ground
         deltaE /= au.cminv                  # Convert from hartee to cminv
         wavelength = 1e7 / deltaE           # Convert from cminv to nm
         wavelengths.append(wavelength)    
+        
+        # Calculate Franck-Condon factor
+        intensity = np.sum(np.multiply(psi_X[:,vbis], psi_B[:,vprime])*dr)
+        
+        # Scale by probablility of hot band being excited
+        # Assuming bolzmann distribution at temperature 100C
+        # T = (100 + 273.15) * au.K
+        # beta = 1 / (au.k * T)
+        # intensity *= math.exp(- beta * (E_ground-E_0))
 
-        # Calculate intensity using Franck-Condon factor
-        FCfactor = np.sum(np.multiply(psi_X[:,vbis], psi_B[:,vprime])*dr)
-        frequency = 3 / (wavelength * 10)   # Frequency from wavelegth in nm
-        intensities.append(weight * FCfactor * FCfactor * frequency**3)
+        frequency = 3 / (wavelength * 10)
+        intensities.append(intensity * intensity * frequency**3)
 
-    print(wavelengths)
 
 #---------------------------------------#
 #     Generate spectrum from peaks      #
 #---------------------------------------#
 
-# Coordinate system
-n_points = 1000          # Number of datapoints in interval
-wl_inter = (580, 800)    # [nm] wavelength scan interval
-lam = np.linspace(wl_inter[0], wl_inter[1], n_points)   # [nm] wavelength
-spec = np.zeros_like(lam)                               # intensity (FC factor)
+n_points = 10000          # Number of datapoints in interval
+wl_inter = (500, 750)    # [nm] wavelength scan interval
 
 # Gaussian function as shape of peak
 def gaussian(x, mean, std, height):
@@ -74,29 +75,37 @@ def gaussian(x, mean, std, height):
     norm_dist = normalization * np.exp(-0.5*((lam-mean)/std)**2)
     return height * norm_dist
 
+# Coordinate system
+lam = np.linspace(wl_inter[0], wl_inter[1], n_points)   # [nm] wavelength
+spec = np.zeros_like(lam)                               # absorbance
+
 # Iterate over peaks and add them to the spectrum
 for i in range(0, len(wavelengths)):
     peak_mid = wavelengths[i]
     peak_height = intensities[i]
-    peak_width = 0.5
+    peak_width = 0.6
 
     peak = gaussian(wavelengths[i], peak_mid, peak_width, peak_height)
     spec += peak
 
-# Normalize intensity to highest peak
+# Normalize absorbance to highest peak
 spec /= np.max(spec)
+p = 2.0*spec
+T = np.exp(-p)
+A = 1-T
 
-plt.plot(lam, spec)
+plt.plot(lam, A)
+plt.xlim(520, 660)
 plt.show()
 
 #----------------------#
 #     Save to CSV      #
 #----------------------#
 
-with open("output/simulated_f_spec.csv", "w") as f:
+with open("./output/simulated_a_spec.csv", "w") as f:
     # Header
-    f.write("wavelength [nm], relative intensity\n")
+    f.write("Wavelength [nm], Absorption\n")
 
     # Data
     for i in range(0, n_points):
-        f.write("%.5f, %.8f\n" % (lam[i], spec[i]))
+        f.write("%.5f, %.8f\n" % (lam[i], A[i]))

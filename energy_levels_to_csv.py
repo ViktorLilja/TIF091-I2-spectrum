@@ -1,5 +1,5 @@
-import constants.hartee_units as au
-from constants.vib_energy_levels import I2
+import module.hartee_units as au
+from module.vib_energy_levels import I2
 from numpy import linalg as LA
 import numpy as np
 
@@ -26,7 +26,7 @@ E_B, psi_B = LA.eigh(B_H)
 
 
 # Save energy levels to textfile
-with open('output/calculated_energy_levels.csv', 'w') as f:
+with open('./output/calculated_energy_levels.csv', 'w') as f:
 
     # Header
     f.write("Electronic state, nu, energy [cm^-1]\n")

@@ -1,5 +1,5 @@
-import constants.hartee_units as au
-from constants.vib_energy_levels import I2
+import module.hartee_units as au
+from module.vib_energy_levels import I2
 from numpy import linalg as LA
 import numpy as np
 
@@ -24,6 +24,12 @@ B_H = I2["B"].hamiltonian(r)
 E_X, psi_X = LA.eigh(X_H)
 E_B, psi_B = LA.eigh(B_H)
 
+
+#---------------------#
+#     CREATE TABLE    #
+#---------------------#
+
+# Table dimensions
 vbis_max = 6
 vprime_max = 30
 

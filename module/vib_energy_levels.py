@@ -1,5 +1,5 @@
-# Vibrational energy levels for diatomic molecule
-# All parameters muste be given in Hartee atomic units
+# Vibrational energy levels for diatomic molecule from Morse potential.
+# All parameters must be given in Hartee atomic units
 
 # mA:   mass of atom 1
 # mB:   mass of atom 2
@@ -10,7 +10,7 @@
 
 import numpy as np
 import math
-import constants.hartee_units as au
+import module.hartee_units as au
 
 #------------------------#
 #     VibLevel class     #
@@ -70,6 +70,7 @@ class VibLevel:
 
 
     # Energy of vibrational energy level with quantum number nu
+    # calculated directly from we and wexe
     def energy(self, nu):
         E1 = self.we * (0.5 + nu)           # First order term
         E2 = self.wexe * (0.5 + nu)**2      # Second order term

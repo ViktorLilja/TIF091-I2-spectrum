@@ -3,8 +3,8 @@ import math
 import matplotlib.pyplot as plt
 from numpy import linalg as LA
 
-import constants.hartee_units as au
-from constants.vib_energy_levels import I2
+import module.hartee_units as au
+from module.vib_energy_levels import I2
 
 #---------------------------------------------#
 #     CALCULATION OF ENERGY WAVEFUNCTIONS     #

@@ -2,8 +2,8 @@ import numpy as np
 from numpy import linalg as LA
 import matplotlib.pyplot as plt
 
-import constants.hartee_units as au
-from constants.vib_energy_levels import I2
+import module.hartee_units as au
+from module.vib_energy_levels import I2
 
 #---------------------------------------------#
 #     CALCULATION OF ENERGY WAVEFUNCTIONS     #
@@ -13,7 +13,7 @@ from constants.vib_energy_levels import I2
 N = 1000
 
 # Coordinate system
-interval = np.array([2.3, 5.8]) * au.Ang
+interval = np.array([2.0, 5.8]) * au.Ang
 r = np.linspace(interval[0],interval[1],N)
 dr = (interval[1]-interval[0])/N
 
@@ -39,18 +39,19 @@ if plot_energy:
     P_B = np.multiply(psi_B, np.conj(psi_B))
 
     # Plot energy levels for ground state
-    plt.plot(r/au.Ang, I2["X"].potential(r)/au.cminv)
-    for n in range(0, 10):
-        E = E_X[n] + 0.1*P_X[:,n]
+    plt.plot(r/au.Ang, I2["X"].potential(r)/au.cminv, "k")
+    for n in range(0,5):
+        E = E_X[n] + 0.06*P_X[:,n]
         plt.plot(r/au.Ang, E/au.cminv , color="gray")
 
     # Plot energy levels for excited state
-    plt.plot(r/au.Ang, I2["B"].potential(r)/au.cminv)
-    for n in range(0, 10):
-        E = E_B[n] + 0.1*P_B[:,n]
+    plt.plot(r/au.Ang, I2["B"].potential(r)/au.cminv, "k")
+    for n in range(0,3):
+        E = E_B[n] + 0.06*P_B[:,n]
         plt.plot(r/au.Ang, E/au.cminv, color="gray")
 
     plt.xlabel("Atomic separation [Å]")
     plt.ylabel("Energy [cm^-1]")
+    plt.ylim([-1000, 25000])
     plt.show()
 
